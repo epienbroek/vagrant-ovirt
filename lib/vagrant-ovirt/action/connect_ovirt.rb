@@ -33,6 +33,8 @@ module VagrantPlugins
           conn_attr[:ovirt_url] = "#{config.url}/api"
           conn_attr[:ovirt_username] = config.username if config.username
           conn_attr[:ovirt_password] = config.password if config.password
+          conn_attr[:ovirt_verify_ssl] = config.verify_ssl
+          print("conn_attr = #{conn_attr}\n")
 
           # We need datacenter id in fog connection initialization. But it's
           # much simpler to use datacenter name in Vagrantfile. So get
@@ -70,11 +72,15 @@ module VagrantPlugins
         private
 
         def ovirt_connect(credentials)
+          options = { :datacenter_id => credentials[:ovirt_datacenter],
+                      :verify_ssl => credentials[:ovirt_verify_ssl] }
+          @logger.info("options = #{options}")
+
           OVIRT::Client.new(
             credentials[:ovirt_username],
             credentials[:ovirt_password],
             credentials[:ovirt_url],
-            credentials[:ovirt_datacenter],
+            options
           )
         end
       end

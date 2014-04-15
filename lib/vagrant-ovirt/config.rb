@@ -10,6 +10,7 @@ module VagrantPlugins
       attr_accessor :datacenter
       attr_accessor :cluster
       attr_accessor :ip_command
+      attr_accessor :verify_ssl
 
       # Domain specific settings used while creating new machine.
       attr_accessor :memory
@@ -24,6 +25,7 @@ module VagrantPlugins
         @datacenter     = UNSET_VALUE
         @cluster        = UNSET_VALUE
         @ip_command     = UNSET_VALUE
+        @verify_ssl     = UNSET_VALUE
 
         # Domain specific settings.
         @memory     = UNSET_VALUE
@@ -39,6 +41,7 @@ module VagrantPlugins
         @datacenter = nil if @datacenter == UNSET_VALUE
         @cluster = nil if @cluster == UNSET_VALUE
         @ip_command = nil if @ip_command == UNSET_VALUE
+        @verify_ssl = true if @verify_ssl == UNSET_VALUE
 
         # Domain specific settings.
         @memory = 512 if @memory == UNSET_VALUE
