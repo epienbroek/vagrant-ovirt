@@ -35,15 +35,39 @@ else
 fi
 
 
+# A minimal install of RHEL7 RC doesn't include yum repositories
+# Configure them manually
+if [ $RHEL_MAJOR_VERSION -eq 7 ]; then
+  cat > /etc/yum.repos.d/rhel.repo << EOF
+[rhel]
+name=Red Hat Enterprise Linux 7 RC - \$basearch
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=rhel-7&arch=\$basearch
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+[rhel-optional]
+name=Red Hat Enterprise Linux 7 RC Optional - \$basearch
+mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=rhel-optional-7&arch=\$basearch
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+EOF
+fi
+
 # Enable EPEL and Puppet repositories.
 if [ $RHEL_MAJOR_VERSION -eq 5 ]; then
   yum install -y \
     http://ftp.astral.ro/mirrors/fedora/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm \
     https://yum.puppetlabs.com/el/5/products/x86_64/puppetlabs-release-5-7.noarch.rpm
-else
+elif [ $RHEL_MAJOR_VERSION -eq 6 ]; then
   yum install -y \
     http://ftp.astral.ro/mirrors/fedora/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm \
     https://yum.puppetlabs.com/el/6/products/x86_64/puppetlabs-release-6-7.noarch.rpm
+else
+  yum install -y \
+    http://dl.fedoraproject.org/pub/epel/beta/7/x86_64/epel-release-7-0.1.noarch.rpm \
+    http://yum.puppetlabs.com/el/7/products/x86_64/puppetlabs-release-7-10.noarch.rpm
 fi
 
 # Install some required software.
@@ -79,8 +103,11 @@ chown -R vagrant:vagrant $vagrant_home/.ssh
 
 
 # Disable firewall and switch SELinux to permissive mode.
-chkconfig iptables off
-chkconfig ip6tables off
+# On a minimal RHEL7 installation iptables is not installed
+if [ $RHEL_MAJOR_VERSION -lt 7 ]; then
+  chkconfig iptables off
+  chkconfig ip6tables off
+fi
 sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/sysconfig/selinux
 [ -f /etc/selinux/config ] && sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
 
